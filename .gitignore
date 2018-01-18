@@ -1,0 +1,36 @@
+/tests/Servomotor.X/nbproject/private/
+/tests/Servomotor.X/build/default/
+/tests/Servomotor.X/dist/default/
+/tests/Motor.X/nbproject/private/
+/tests/Ultrasonic.X/nbproject/private/
+/tests/Bluetooth.X/nbproject/private/
+/tests/Bluetooth.X/build/default/
+/tests/Bluetooth.X/dist/default/
+/tests/Ultrasonic.X/build/default/
+/tests/Ultrasonic.X/dist/default/
+/tests/LED.X/nbproject/private/
+/tests/LED.X/build/default/
+/tests/LED.X/dist/default/
+/tests/sdfdfdfds.X/nbproject/private/
+/tests/Motor.X/build/default/
+/tests/Motor.X/dist/default/
+/firmware/g-bot.X/nbproject/private/
+/firmware/g-bot.X/build/default/
+/firmware/g-bot.X/dist/default/
+project-v1/Circuito/Last Loaded Robot.DBK
+
+project-v1/Circuito/Robot.DSN
+
+project-v1/Circuito/Robot.pdsprj.PAVAN-PC.Pavan.workspace
+
+project-v1/Circuito/Robot.PWI
+
+tests/Ultrasonic.X/xtal.h
+
+tests/Ultrasonic.X/serial.h
+
+tests/Ultrasonic.X/serial.c
+
+tests/Ultrasonic.X/nbproject/project.xml
+
+schematics/Last Loaded g-bot-v2.DBK
