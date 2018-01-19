@@ -1,9 +1,3 @@
-/* 
- * File:   
- * Author: 
- * Comments:
- * Revision history: 
- */
 
 #ifndef _SERVO_H
 #define	_SERVO_H

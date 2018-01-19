@@ -1,9 +1,3 @@
-/*
- * File:   servo.c
- * Author: pavan
- *
- * Created on September 27, 2017, 10:07 PM
- */
 
 #include "servo.h"
 

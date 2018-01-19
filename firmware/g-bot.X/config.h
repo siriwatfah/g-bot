@@ -14,24 +14,12 @@
 #pragma config WRT = OFF        // Flash Program Memory Write Enable bits (Write protection off; all program memory may be written to by EECON control)
 #pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
 
-
-#define IN1    PORTBbits.RB0    // Input for engine right
-#define IN2    PORTBbits.RB1    // Input for engine right
-#define IN3    PORTBbits.RB2    // Input for engine left
-#define IN4    PORTBbits.RB3    // Input for engine left
-
 #define TRIG   PORTDbits.RD0    // trigger for HC-SR04
 #define ECHO   PORTDbits.RD1    // echo for HC-SR04
 
 #define ALERT   PORTDbits.RD3   // led for collision indicator
 #define LIGHT_L PORTDbits.RD4   // led for frontal light left
 #define LIGHT_R PORTDbits.RD5   // led for frontal light right
-
-#define STOP    0               // flag stop for L293D
-#define FRONT   1               // flag front for L293D
-#define BACK    2               // flag bag for L293D
-#define LEFT    3               // flag left for L293D
-#define RIGHT   4               // flag right for L293D
 
 #define S_CENTER  0             // angle 0 in servomotor is center 
 #define S_LEFT    90            // angle 90 in servomotor is left

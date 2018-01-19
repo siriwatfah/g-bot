@@ -13,13 +13,13 @@
 #include "config.h"
 #include "serial.h"
 #include "servo.h"
-#include "pwm.h"
+#include "motor.h"
 
 enum mode_opt {
-    MODM = 1,      // manual mode
-    MODH,          // hybrid mode
-    MODA           // automatic mode
-}mode = MODM;
+    MOD_M = 1,      // manual mode
+    MOD_H,          // hybrid mode
+    MOD_A           // automatic mode
+}mode = MOD_M;
 
 unsigned int index = 0;
 unsigned char buffer[10];
@@ -28,7 +28,6 @@ unsigned int distLeft = 0;
 unsigned int distRight = 0;
 unsigned int distCenter = 0;
 
-void configPWM();
 void configPorts();
 void configSerial();
 void configUltrasonic();
@@ -40,12 +39,6 @@ void configInterrupts();
 void setInitialState();
 
 /**
- * Set direction of the engines 
- * @param direction integer with direction of engine
- */
-void setDirection(int direction);
-
-/**
  * Object detect with ultrasonic sensor
  */
 unsigned int ultrasonic(void);
@@ -55,11 +48,15 @@ unsigned int ultrasonic(void);
  */
 void interrupt serialHandler();
 
+void denialAction();
+void happinessAction();
+void lookLeftAction();
+void lookRightAction();
 
 void main(void) {
     
     // initial settings     
-    configPWM();    
+    configMotor();    
     configPorts();
     configSerial();
     configUltrasonic();
@@ -69,26 +66,31 @@ void main(void) {
     
     while (1) {
         
-        distLeft = 0;
-        distRight = 0;
+        if (mode == MOD_A) {
         
-        distCenter = ultrasonic();
-        printf("%u\n", distCenter);
+            distLeft = 0;
+            distRight = 0;
         
-        if (distCenter <= 15) {
-            ALERT = 1;
-            setDirection(STOP);
+            distCenter = ultrasonic();        
+        
+            if (distCenter <= 15) {
+                
+                setDirection(STOP);
+                ALERT = 1;
 
-            if (mode == MODA) {
                 servoRotate(S_LEFT);
+                __delay_ms(10);
                 distLeft = ultrasonic();
 
                 servoRotate(S_RIGHT);
+                __delay_ms(10);
                 distRight = ultrasonic();
+                
                 servoRotate(S_CENTER);
 
-                setDirection(BACK);
-                __delay_ms(100);
+                printf("left: %u\n", distLeft);
+                printf("right: %u\n", distRight);
+                printf("center: %u\n", distCenter);
                 
                 if (distLeft > distRight) {
                     setDirection(LEFT);
@@ -99,23 +101,13 @@ void main(void) {
                 __delay_ms(300);
                 setDirection(FRONT);
                 ALERT = 0;
-
-            } else {
-                __delay_ms(100);
-                ALERT = 0;
             }
+            
         }
        
     }
     
     return;
-}
-
-void configPWM() {
-    PWM1_Init(5000);
-    PWM2_Init(5000);    
-    PWM1_Start();
-    PWM2_Start();
 }
 
 void configPorts() {
@@ -148,75 +140,6 @@ void setInitialState() {
     ALERT = 0x00;
     LIGHT_L = 0x00;
     LIGHT_R = 0x00;
-}
-
-void setDirection(int direction) {
-    
-    if (direction == STOP) {
-        
-        //right motor
-        IN1 = 0x00;
-        IN2 = 0x00;
-        
-        //left motor
-        IN3 = 0x00;
-        IN4 = 0x00;
-        
-        PWM1_Duty(0);
-        PWM2_Duty(0);
-        
-    } else if (direction == FRONT) {
-        
-        //right motor
-        IN1 = 0x00;
-        IN2 = 0x01;
-        
-        //left motor
-        IN3 = 0x00;
-        IN4 = 0x01;
-        
-        PWM1_Duty(880);
-        PWM2_Duty(1000);
-        
-    } else if (direction == BACK) {
-        
-        //right motor
-        IN1 = 0x01;
-        IN2 = 0x00;
-        
-        //left motor
-        IN3 = 0x01;
-        IN4 = 0x00;
-        
-        PWM1_Duty(1000);
-        PWM2_Duty(1200);
-        
-    } else if (direction == LEFT) {
-        
-        //right motor
-        IN1 = 0x00;
-        IN2 = 0x01;
-        
-        //left motor
-        IN3 = 0x00;
-        IN4 = 0x00;
-        
-        PWM1_Duty(800);
-        PWM2_Duty(0);
-        
-    } else if (direction == RIGHT) {
-        
-        //right motor
-        IN1 = 0x00;
-        IN2 = 0x00;
-        
-        //left motor
-        IN3 = 0x00;
-        IN4 = 0x01;
-        
-        PWM1_Duty(0);
-        PWM2_Duty(1000);
-    }
 }
 
 unsigned int ultrasonic(void) {
@@ -259,41 +182,83 @@ void interrupt serialHandler() {
         
         if (buffer[index] == '&') {
             
+            /* Mode options  */
+            
             if (buffer[0] == '$' && buffer[1] == 'M' && buffer[2] == 'O' && buffer[3] == 'D' && buffer[4] == 'M') {
-                mode = MODM;
+                mode = MOD_M;
             }
             
             if (buffer[0] == '$' && buffer[1] == 'M' && buffer[2] == 'O' && buffer[3] == 'D' && buffer[4] == 'A') {
-                mode = MODA;
+                mode = MOD_A;
                 setDirection(FRONT);
             }
             
+            /* Engine controls */
+            
             if (buffer[0] == '$' && buffer[1] == 'D' && buffer[2] == 'I' && buffer[3] == 'R' && buffer[4] == 'S') {
-                if (mode == MODM) setDirection(STOP);
+                if (mode == MOD_M) setDirection(STOP);
             }
             
             if (buffer[0] == '$' && buffer[1] == 'D' && buffer[2] == 'I' && buffer[3] == 'R' && buffer[4] == 'F') {
-                if (mode == MODM) setDirection(FRONT);
+                if (mode == MOD_M) setDirection(FRONT);
             }
             
             if (buffer[0] == '$' && buffer[1] == 'D' && buffer[2] == 'I' && buffer[3] == 'R' && buffer[4] == 'L') {
-                if (mode == MODM) {
+                if (mode == MOD_M) {
                     setDirection(LEFT);
                     __delay_ms(100);
-                    setDirection(FRONT);
+                    
+                    if (isMove) {
+                        setDirection(FRONT);
+                    } else {
+                        setDirection(STOP);
+                    }                    
                 }
             }
             
             if (buffer[0] == '$' && buffer[1] == 'D' && buffer[2] == 'I' && buffer[3] == 'R' && buffer[4] == 'R') {
-                if (mode == MODM) {
+                if (mode == MOD_M) {
                     setDirection(RIGHT);
                     __delay_ms(100);
-                    setDirection(FRONT);
+                    
+                    if (isMove) {
+                        setDirection(FRONT);
+                    } else {
+                        setDirection(STOP);
+                    }
                 }
             }
             
             if (buffer[0] == '$' && buffer[1] == 'D' && buffer[2] == 'I' && buffer[3] == 'R' && buffer[4] == 'B') {
-                setDirection(BACK);                
+                setDirection(BACK);
+                __delay_ms(200);
+                setDirection(STOP);
+            }
+            
+            /* Actions and other commands */
+            
+            if (buffer[0] == '$' && buffer[1] == 'A' && buffer[2] == 'C' && buffer[3] == 'T' && buffer[4] == 'D') {
+                if (mode == MOD_M) {
+                    denialAction();
+                }
+            }
+            
+            if (buffer[0] == '$' && buffer[1] == 'A' && buffer[2] == 'C' && buffer[3] == 'T' && buffer[4] == 'H') {
+                if (mode == MOD_M) {
+                    happinessAction();
+                }
+            }
+            
+            if (buffer[0] == '$' && buffer[1] == 'A' && buffer[2] == 'C' && buffer[3] == 'T' && buffer[4] == 'L' && buffer[5] == 'L') {
+                if (mode == MOD_M) {
+                    lookLeftAction();
+                }
+            }
+            
+            if (buffer[0] == '$' && buffer[1] == 'A' && buffer[2] == 'C' && buffer[3] == 'T' && buffer[4] == 'L' && buffer[5] == 'R') {
+                if (mode == MOD_M) {
+                    lookRightAction();
+                }
             }
             
             index = 0;
@@ -304,4 +269,38 @@ void interrupt serialHandler() {
         serialClean();        
     }
     
+}
+
+/* Mode options */
+
+
+
+/* Actions and other commands */
+
+void denialAction() {
+    servoRotate(S_LEFT);
+    servoRotate(S_RIGHT);
+    servoRotate(S_CENTER);
+}
+
+void happinessAction() {
+    setDirection(LEFT);
+    denialAction();
+    __delay_ms(100);
+    setDirection(RIGHT);
+    denialAction();
+    __delay_ms(100);
+    setDirection(STOP);
+}
+
+void lookLeftAction() {
+    servoRotate(S_LEFT);
+    __delay_ms(100);
+    servoRotate(S_CENTER);
+}
+
+void lookRightAction() {
+    servoRotate(S_RIGHT);
+    __delay_ms(100);
+    servoRotate(S_CENTER);
 }

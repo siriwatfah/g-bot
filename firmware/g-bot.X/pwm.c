@@ -1,29 +1,21 @@
-/*
- * File:   pwm.c
- * Author: pavan
- *
- * Created on December 9, 2017, 10:24 PM
- */
-
 
 #include "pwm.h"
-
 
 int PWM_Max_Duty() {    
     return (_XTAL_FREQ / (freq * TMR2PRESCALE);
 }
 
-PWM1_Init(long fre) {
+void PWM1_Init(long fre) {
     PR2 = (_XTAL_FREQ / (fre * 4 * TMR2PRESCALE)) - 1;
     freq = fre;
 }
 
-PWM2_Init(long fre) {
+void PWM2_Init(long fre) {
     PR2 = (_XTAL_FREQ / (fre * 4 * TMR2PRESCALE)) - 1;
     freq = fre;
 }
 
-PWM1_Duty(unsigned int duty) {
+void PWM1_Duty(unsigned int duty) {
     if (duty < 1024) {
         duty = ((float) duty / 1023) * PWM_Max_Duty();
         CCP1X = duty & 2;
@@ -32,7 +24,7 @@ PWM1_Duty(unsigned int duty) {
     }
 }
 
-PWM2_Duty(unsigned int duty) {
+void PWM2_Duty(unsigned int duty) {
     if (duty < 1024) {
         duty = ((float) duty / 1023) * PWM_Max_Duty();
         CCP2X = duty & 2;
@@ -41,7 +33,7 @@ PWM2_Duty(unsigned int duty) {
     }
 }
 
-PWM1_Start() {
+void PWM1_Start() {
 
     CCP1M3 = 1;
     CCP1M2 = 1;
@@ -60,12 +52,12 @@ PWM1_Start() {
     TRISC2 = 0;
 }
 
-PWM1_Stop() {
+void PWM1_Stop() {
     CCP1M3 = 0;
     CCP1M2 = 0;
 }
 
-PWM2_Start() {
+void PWM2_Start() {
     CCP2M3 = 1;
     CCP2M2 = 1;
 #if TMR2PRESCALE == 1
@@ -82,7 +74,7 @@ PWM2_Start() {
     TRISC1 = 0;
 }
 
-PWM2_Stop() {
+void PWM2_Stop() {
     CCP2M3 = 0;
     CCP2M2 = 0;
 }

@@ -1,9 +1,3 @@
-/*
- * File:   serial.c
- * Author: pavan
- *
- * Created on September 26, 2017, 9:57 PM
- */
 
 #include "serial.h"
 

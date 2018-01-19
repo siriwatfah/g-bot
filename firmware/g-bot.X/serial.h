@@ -1,6 +1,6 @@
 /* 
  * Library for management of the serial comunications of PIC16f877A
- * Author: pavan
+ * Author: Adilson Pavan
  */
 
 #ifndef _SERIAL_H
