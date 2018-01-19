@@ -1,3 +1,2 @@
-#sources
-*.c text
-*.h text
++*.C linguist-language=C
++*.H linguist-language=C
