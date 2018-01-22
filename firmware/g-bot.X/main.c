@@ -24,10 +24,6 @@ enum mode_opt {
 unsigned int index = 0;
 unsigned char buffer[10];
 
-unsigned int distLeft = 0;
-unsigned int distRight = 0;
-unsigned int distCenter = 0;
-
 void configPorts();
 void configSerial();
 void configUltrasonic();
@@ -39,6 +35,11 @@ void configInterrupts();
 void setInitialState();
 
 /**
+ * Decision making in autonomous mode.
+ */
+void decisionMaking();
+
+/**
  * Object detect with ultrasonic sensor
  */
 unsigned int ultrasonic(void);
@@ -48,6 +49,9 @@ unsigned int ultrasonic(void);
  */
 void interrupt serialHandler();
 
+/**
+ * Actions in manual mode
+ */
 void denialAction();
 void happinessAction();
 void lookLeftAction();
@@ -66,43 +70,10 @@ void main(void) {
     
     while (1) {
         
+        // case autonomous mode
+        
         if (mode == MOD_A) {
-        
-            distLeft = 0;
-            distRight = 0;
-        
-            distCenter = ultrasonic();        
-        
-            if (distCenter <= 15) {
-                
-                setDirection(STOP);
-                ALERT = 1;
-
-                servoRotate(S_LEFT);
-                __delay_ms(10);
-                distLeft = ultrasonic();
-
-                servoRotate(S_RIGHT);
-                __delay_ms(10);
-                distRight = ultrasonic();
-                
-                servoRotate(S_CENTER);
-
-                printf("left: %u\n", distLeft);
-                printf("right: %u\n", distRight);
-                printf("center: %u\n", distCenter);
-                
-                if (distLeft > distRight) {
-                    setDirection(LEFT);
-                } else {
-                    setDirection(RIGHT);
-                }
-
-                __delay_ms(300);
-                setDirection(FRONT);
-                ALERT = 0;
-            }
-            
+            decisionMaking();
         }
        
     }
@@ -140,6 +111,44 @@ void setInitialState() {
     ALERT = 0x00;
     LIGHT_L = 0x00;
     LIGHT_R = 0x00;
+}
+
+void decisionMaking() {
+    
+    unsigned int distLeft = 0;
+    unsigned int distRight = 0;
+    unsigned int distCenter = ultrasonic();
+
+    printf("center: %u\n", distCenter);
+    
+    if (distCenter <= 20) {
+        setDirection(STOP);
+        ALERT = 0X01;
+
+        servoRotate(S_LEFT);
+        __delay_ms(50);
+        distLeft = ultrasonic();
+        __delay_ms(50);
+
+        servoRotate(S_RIGHT);
+        __delay_ms(50);
+        distRight = ultrasonic();
+        __delay_ms(50);
+
+        servoRotate(S_CENTER);
+        __delay_ms(50);
+        
+        if (distLeft > distRight) {
+            setDirection(LEFT);
+        } else {
+            setDirection(RIGHT);
+        }
+        __delay_ms(200);
+
+        ALERT = 0X00;
+        setDirection(FRONT);
+        __delay_ms(100);
+    }
 }
 
 unsigned int ultrasonic(void) {
@@ -261,6 +270,21 @@ void interrupt serialHandler() {
                 }
             }
             
+            /* Control Light */
+            
+            if (buffer[0] == '$' && buffer[1] == 'L' && buffer[2] == 'I' && buffer[3] == 'G' && buffer[4] == 'L') {
+                LIGHT_L = ~LIGHT_L;                
+            }
+            
+            if (buffer[0] == '$' && buffer[1] == 'L' && buffer[2] == 'I' && buffer[3] == 'G' && buffer[4] == 'R') {
+                LIGHT_R = ~LIGHT_R;
+            }
+            
+            if (buffer[0] == '$' && buffer[1] == 'L' && buffer[2] == 'I' && buffer[3] == 'G' && buffer[4] == 'F') {
+                LIGHT_L = ~LIGHT_L;
+                LIGHT_R = ~LIGHT_R;
+            }
+            
             index = 0;
         } else {
             index++;
@@ -270,10 +294,6 @@ void interrupt serialHandler() {
     }
     
 }
-
-/* Mode options */
-
-
 
 /* Actions and other commands */
 
