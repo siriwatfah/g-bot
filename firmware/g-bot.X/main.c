@@ -57,6 +57,17 @@ void happinessAction();
 void lookLeftAction();
 void lookRightAction();
 
+/**
+ * Median filter to remove noise from a signal (ultrassonic)
+  */
+int median(int a, int b, int c, int d, int e);
+
+/**
+ * Starts the initial state median filter
+ */
+void setInitialMedianFilter();
+
+
 void main(void) {
     
     // initial settings     
@@ -111,17 +122,30 @@ void setInitialState() {
     ALERT = 0x00;
     LIGHT_L = 0x00;
     LIGHT_R = 0x00;
+    
+    setInitialMedianFilter();
 }
 
 void decisionMaking() {
     
     unsigned int distLeft = 0;
     unsigned int distRight = 0;
-    unsigned int distCenter = ultrasonic();
-
-    printf("center: %u\n", distCenter);
+    unsigned int distCenter = 0;
     
-    if (distCenter <= 20) {
+    // add an element to the cyclic buffer
+    lastReadings[nrReadings++ % 5] = ultrasonic();
+    distCenter = median(lastReadings[0],
+                        lastReadings[1],
+                        lastReadings[2],
+                        lastReadings[3],
+                        lastReadings[4]);
+    
+    printf("%u\n", distCenter);
+    
+    if (distCenter <= 25) {
+        setDirection(STOP);
+        setDirection(BACK);
+        __delay_ms(100);
         setDirection(STOP);
         ALERT = 0X01;
 
@@ -147,8 +171,32 @@ void decisionMaking() {
 
         ALERT = 0X00;
         setDirection(FRONT);
+        
+        setInitialMedianFilter();
         __delay_ms(100);
     }
+}
+
+int median(int a, int b, int c, int d, int e) {
+    sort(a,b);
+    sort(d,e);  
+	sort(a,c);	
+    sort(b,c);
+    sort(a,d);  
+    sort(c,d);
+    sort(b,e);
+    sort(b,c);
+    // this last one is obviously unnecessary for the median
+    //sort(d,e);
+	
+    return c;
+}
+
+void setInitialMedianFilter() {
+    nrReadings = 0;
+    for(int i=0; i<5; i++) {
+        lastReadings[i] = MAX_DISTANCE;
+    }    
 }
 
 unsigned int ultrasonic(void) {
@@ -324,3 +372,4 @@ void lookRightAction() {
     __delay_ms(100);
     servoRotate(S_CENTER);
 }
+

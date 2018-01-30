@@ -69,8 +69,8 @@ void goBack() {
     IN3 = 0x01;
     IN4 = 0x00;
 
-    PWM1_Duty(1000);
-    PWM2_Duty(1200);
+    PWM1_Duty(800);
+    PWM2_Duty(1000);
 }
 
 void turnLeft() {

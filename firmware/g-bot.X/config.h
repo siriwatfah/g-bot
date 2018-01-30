@@ -25,4 +25,14 @@
 #define S_LEFT    90            // angle 90 in servomotor is left
 #define S_RIGHT   180           // angle 180 in servomotor is right
 
+
+// Trick using XOR to swap two variables
+#define swap(a,b) a ^= b; b ^= a; a ^= b;
+#define sort(a,b) if(a>b){ swap(a,b); }
+
+#define MAX_DISTANCE 200;
+
+int nrReadings = 0;             // number of readings since the beginning
+int lastReadings[5];            // the cyclic buffer
+
 #endif	/* _CONFIG_H */
